@@ -1,0 +1,29 @@
+# Compiled binaries and target dirs
+target/
+*.class
+dist/
+build/
+*.jar
+*.war
+*.ear
+
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment and sensitive keys
+.env
+*.pem
+*.key
+
+# IDE and OS files
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Storage runtime data
+data/s3_storage/users/

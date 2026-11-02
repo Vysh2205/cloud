@@ -1,0 +1,49 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: distributed-cloud-backup-platform
+  profiles:
+    active: dev
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+
+# Custom Cloud Backup Platform Configurations
+cloud:
+  backup:
+    s3:
+      bucket-name: ${AWS_S3_BUCKET:distributed-cloud-backups}
+      region: ${AWS_REGION:us-east-1}
+      endpoint: ${AWS_S3_ENDPOINT:http://localhost:9000}
+      access-key: ${AWS_ACCESS_KEY_ID:minioadmin}
+      secret-key: ${AWS_SECRET_ACCESS_KEY:minioadmin}
+      path-style-access-enabled: ${AWS_S3_PATH_STYLE_ACCESS:true}
+      auto-create-bucket: ${AWS_S3_AUTO_CREATE_BUCKET:true}
+      enable-versioning: ${AWS_S3_ENABLE_VERSIONING:true}
+    jwt:
+      secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24 hours
+    retry:
+      max-attempts: ${RETRY_MAX_ATTEMPTS:3}
+      initial-interval-ms: ${RETRY_INITIAL_INTERVAL_MS:1000}
+      multiplier: ${RETRY_MULTIPLIER:2.0}
+      max-interval-ms: ${RETRY_MAX_INTERVAL_MS:5000}
+    storage:
+      # Optional local directory fallback if S3 is in standalone mock mode
+      local-fallback-dir: ${LOCAL_FALLBACK_DIR:./storage_data}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true

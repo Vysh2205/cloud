@@ -1,0 +1,482 @@
+{
+  "info": {
+    "name": "Distributed Cloud Backup & Recovery Platform API",
+    "_postman_id": "c1f7b889-4981-4bce-9fae-67a840e69888",
+    "description": "Production Postman test collection for Distributed Cloud Backup & Recovery Platform, including authentication, S3 file upload with SHA-256 calculation, versioning, cryptographic integrity verification, disaster recovery, and audit logs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fileId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "versionId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "if (jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set(\"token\", jsonData.data.token);",
+                  "    console.log(\"Saved JWT token to collection variable\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"cloud_architect\",\n  \"email\": \"architect@cloudbackup.io\",\n  \"password\": \"SecurePass2026!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "if (jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set(\"token\", jsonData.data.token);",
+                  "    console.log(\"Saved JWT token to collection variable\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usernameOrEmail\": \"cloud_architect\",\n  \"password\": \"SecurePass2026!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Current Profile (/api/auth/me)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. File Upload & Backup",
+      "item": [
+        {
+          "name": "Upload File (v1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Upload status is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "if (jsonData.data && jsonData.data.id) {",
+                  "    pm.collectionVariables.set(\"fileId\", jsonData.data.id);",
+                  "    pm.collectionVariables.set(\"versionId\", jsonData.data.currentVersionId);",
+                  "    console.log(\"Saved fileId: \" + jsonData.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "changeSummary",
+                  "value": "Initial production backup",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/files/upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "files", "upload"]
+            }
+          }
+        },
+        {
+          "name": "List All User Files",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/files",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "files"]
+            }
+          }
+        },
+        {
+          "name": "Search Files By Keyword",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/files?search=config",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "files"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "config"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get File By ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/files/{{fileId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "files", "{{fileId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. File Versioning & Integrity",
+      "item": [
+        {
+          "name": "Get File Version Lineage",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Status is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "if (jsonData.data && jsonData.data.length > 0) {",
+                  "    pm.collectionVariables.set(\"versionId\", jsonData.data[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/files/{{fileId}}/versions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "files", "{{fileId}}", "versions"]
+            }
+          }
+        },
+        {
+          "name": "Verify Cryptographic Integrity (SHA-256)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/files/{{fileId}}/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "files", "{{fileId}}", "verify"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Disaster Recovery & Download",
+      "item": [
+        {
+          "name": "Restore Previous Version",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"promoteToCurrentVersion\": true,\n  \"restoreReason\": \"Automated rollback to verified backup\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/files/{{fileId}}/restore/{{versionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "files", "{{fileId}}", "restore", "{{versionId}}"]
+            }
+          }
+        },
+        {
+          "name": "Download Active File",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/files/{{fileId}}/download",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "files", "{{fileId}}", "download"]
+            }
+          }
+        },
+        {
+          "name": "Download Specific Historical Version",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/files/{{fileId}}/download?versionId={{versionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "files", "{{fileId}}", "download"],
+              "query": [
+                {
+                  "key": "versionId",
+                  "value": "{{versionId}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Audit & Activity Trails",
+      "item": [
+        {
+          "name": "Get Backup History Audit Log",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/backup/history",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "backup", "history"]
+            }
+          }
+        },
+        {
+          "name": "Get Recovery History Audit Log",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/recovery/history",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "recovery", "history"]
+            }
+          }
+        },
+        {
+          "name": "Get Dashboard Statistics",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "stats"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

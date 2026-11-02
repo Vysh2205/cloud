@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloud-backup-config
+  namespace: cloud-backup
+data:
+  SPRING_PROFILES_ACTIVE: "prod"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-service:5432/cloud_backup_db"
+  SPRING_DATASOURCE_USERNAME: "postgres"
+  AWS_S3_ENDPOINT: "http://minio-service:9000"
+  AWS_S3_BUCKET: "distributed-cloud-backups"
+  AWS_S3_PATH_STYLE_ACCESS: "true"
+  AWS_REGION: "us-east-1"
+  RETRY_MAX_ATTEMPTS: "3"
